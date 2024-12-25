@@ -21,4 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "LearnJetpack"
 include(":app")
- 
+include(":mylibrary")
+include(":mylibrary2")
