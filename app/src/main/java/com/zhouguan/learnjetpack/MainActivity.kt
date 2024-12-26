@@ -1,25 +1,30 @@
 package com.zhouguan.learnjetpack
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.switchMap
 import com.zhouguan.learnjetpack.ViewModel.MainViewModel
+import com.zhouguan.learnjetpack.database.AppDatabase
 import com.zhouguan.learnjetpack.databinding.ActivityMainBinding
 import com.zhouguan.learnjetpack.entity.Repository
 import com.zhouguan.learnjetpack.entity.User
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
-    private val sp: SharedPreferences by lazy {
+    private val sharedPreference: SharedPreferences by lazy {
         getPreferences(MODE_PRIVATE)
     }
 
@@ -28,9 +33,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val countReserved by lazy {
-        sp.getInt("count_reserved", 0)
+        sharedPreference.getInt("count_reserved", 0)
     }
-
 
     private val viewModel: MainViewModel by lazy {
         ViewModelProvider(
@@ -38,15 +42,6 @@ class MainActivity : AppCompatActivity() {
             MainViewModelFactory(counterReserved = countReserved)
         ).get(MainViewModel(0)::class.java)
     }
-
-    private val userIdLiveData = MutableLiveData<String>()
-    val user: LiveData<User> = userIdLiveData.switchMap { userId ->
-        Repository.getUser(userId)
-    }
-    fun getUser(userId: String) {
-        userIdLiveData.value = userId
-    }
-
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,30 +56,71 @@ class MainActivity : AppCompatActivity() {
 
 //        lifecycle.addObserver(MyObserver())
 
-        mBinding.plusOneBtn.setOnClickListener {
-            viewModel.plusOne()
-        }
-        mBinding.clearBtn.setOnClickListener {
-            viewModel.clear()
-        }
 //        viewModel.counter.observe(this, Observer { count ->
 //            mBinding.infoText.text = count.toString()
 //        })
 
-        viewModel.count.observe(this) { count ->
-            mBinding.infoText.text = count.toString()
+        viewModel.run {
+            count.observe(this@MainActivity) { count ->
+                mBinding.infoText.text = count.toString()
+            }
+            user.observe(this@MainActivity, Observer { user ->
+                mBinding.infoText.text = user.firstName
+            })
         }
 
-        mBinding.getUserBtn.setOnClickListener {
-            val userId = (0..10000).random().toString()
-            viewModel.getUser(userId)
-        }
+        val userDao = AppDatabase.getDatabase(this).userDao()
+        val user1 = User("Tom", "Brady", 40)
+        val user2 = User("Tom", "Hanks", 63)
 
+        mBinding.run {
+            plusOneBtn.setOnClickListener {
+                viewModel.plusOne()
+            }
+            clearBtn.setOnClickListener {
+                viewModel.clear()
+            }
+
+            getUserBtn.setOnClickListener {
+                val userId = (0..10000).random().toString()
+                viewModel.getUser(userId)
+            }
+
+            addDataBtn.setOnClickListener {
+                CoroutineScope(Dispatchers.IO).launch {
+                    user1.id = userDao.insertUser(user1)
+                    user2.id = userDao.insertUser(user2)
+                }
+            }
+
+            updateDataBtn.setOnClickListener {
+                CoroutineScope(Dispatchers.IO).launch {
+                    user1.age = 42
+                    userDao.updateUser(user1)
+                }
+            }
+
+            deleteDataBtn.setOnClickListener {
+                CoroutineScope(Dispatchers.IO).launch {
+                    userDao.deleteUserByLastName("Hanks")
+                }
+            }
+
+            queryDataBtn.setOnClickListener {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val users = userDao.loadAllUsers()
+                    users.forEach { user ->
+                        Log.d("MainActivity", user.toString())
+                    }
+                }
+            }
+
+        }
     }
 
     override fun onPause() {
         super.onPause()
-        sp.edit()
+        sharedPreference.edit()
             .putInt("count_reserved", viewModel.count.value ?: 0)
             .apply() // 或 .commit()
     }
