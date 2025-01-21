@@ -67,5 +67,5 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.1.1")
 
-    implementation("androidx.work:work-runtime:2.2.0")
+    implementation("androidx.work:work-runtime:2.7.0-alpha05")
 }
