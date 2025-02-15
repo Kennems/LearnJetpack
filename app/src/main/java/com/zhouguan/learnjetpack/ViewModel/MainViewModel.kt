@@ -28,9 +28,22 @@ class MainViewModel(countReserved: Int) : ViewModel() {
     val userLiveData = MutableLiveData<User>()
     private val userIdLiveData = MutableLiveData<String>()
 
+    /**
+     * map() 方法就是专门用于解决这种问题的，它可以将User类型的LiveData自由地转型成任意
+     * 其他类型的LiveData
+     *
+     * 当userLiveData的数据发生变化时，map()方法
+     * 会监听到变化并执行转换函数中的逻辑，然后再将转换之后的数据通知给userName的观察者
+     */
     val userName: LiveData<String> = userLiveData.map { user ->
         "${user.firstName} ${user.lastName}"
     }
+
+    /**
+     * switchMap的使用场景：
+     *  如果ViewModel中的某个LiveData对象是调用另外的方法获取的，那么我们就可以借助
+     * switchMap()方法，将这个LiveData对象转换成另外一个可观察的LiveData对象
+     */
     val user: LiveData<User> = userIdLiveData.switchMap { userId ->
         Repository.getUser(userId)
     }

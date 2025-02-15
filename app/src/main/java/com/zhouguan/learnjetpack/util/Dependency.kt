@@ -1,4 +1,4 @@
-package com.zhouguan.learnjetpack
+package com.zhouguan.learnjetpack.util
 
 class Dependency {
     val libraries = ArrayList<String>()

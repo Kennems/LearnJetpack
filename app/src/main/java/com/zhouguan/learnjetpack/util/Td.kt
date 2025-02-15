@@ -1,4 +1,4 @@
-package com.zhouguan.learnjetpack
+package com.zhouguan.learnjetpack.util
 
 class Td { // table data
     var content = ""

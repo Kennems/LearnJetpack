@@ -68,4 +68,12 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.1.1")
 
     implementation("androidx.work:work-runtime:2.7.0-alpha05")
+
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation("com.google.code.gson:gson:2.9.0")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.google.code.gson:gson:2.8.8")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.1.1")
 }

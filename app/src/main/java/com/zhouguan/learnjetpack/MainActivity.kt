@@ -15,6 +15,7 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.zhouguan.learnjetpack.ViewModel.MainViewModel
+import com.zhouguan.learnjetpack.ViewModel.MainViewModelFactory
 import com.zhouguan.learnjetpack.database.AppDatabase
 import com.zhouguan.learnjetpack.databinding.ActivityMainBinding
 import com.zhouguan.learnjetpack.entity.User
@@ -65,6 +66,7 @@ class MainActivity : AppCompatActivity() {
             count.observe(this@MainActivity) { count ->
                 mBinding.infoText.text = count.toString()
             }
+
             user.observe(this@MainActivity, Observer { user ->
                 mBinding.infoText.text = user.firstName
             })
@@ -125,7 +127,8 @@ class MainActivity : AppCompatActivity() {
                 // 设置 WorkRequest：配置延迟、标记和退避策略。
                 val request = OneTimeWorkRequest.Builder(SimpleWorker::class.java)
                     // 设置任务的初始延迟时间，这里设置为 5 分钟。
-                    .setInitialDelay(5, TimeUnit.MINUTES)
+//                    .setInitialDelay(5, TimeUnit.MINUTES)
+                    .setInitialDelay(0, TimeUnit.MINUTES)
                     // 给任务添加一个标签，用于分组管理任务或批量取消。
                     .addTag("simple")
                     // 设置任务的退避策略，防止任务频繁失败时过度消耗资源。
@@ -136,7 +139,6 @@ class MainActivity : AppCompatActivity() {
 
                 // 使用 WorkManager 将任务请求添加到任务队列中，开始调度任务。
                 WorkManager.getInstance(this@MainActivity).enqueue(request)
-
                 // 获取任务信息的 LiveData，通过任务的 ID 查询状态。
                 val workInfo =
                     WorkManager.getInstance(this@MainActivity).getWorkInfoByIdLiveData(request.id)
